@@ -103,7 +103,7 @@ function handlePhotoData(photoData) {
         downloads,
       } = image;
 
-      return `<li class="gallery-item">
+      return `<li class="gallery-item hidden">
           <a class="gallery-link" href="${largeImageURL}">
             <img
               class="gallery-image"
@@ -122,6 +122,15 @@ function handlePhotoData(photoData) {
     .join('');
 
   gallery.innerHTML = fragment;
+
+  const items = document.querySelectorAll('.gallery-item');
+  items.forEach((item, index) => {
+    setTimeout(() => {
+      item.classList.remove('hidden');
+      item.classList.add('fade-in');
+    }, index * 100); // Задержка между добавлением элементов (в миллисекундах)
+    return;
+  });
 
   if (lightbox) {
     lightbox.refresh();
