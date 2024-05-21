@@ -48,8 +48,7 @@ function handleFormSubmit(event) {
 }
 
 function buildApiUrl(query) {
-  const BASE_URL = 'https://pixabay.com';
-  const END_POINT = '/api';
+  const BASE_URL = 'https://pixabay.com/api';
   const params = new URLSearchParams({
     key: '43998690-c32ec46c3205eb1d30dd41df5',
     q: query,
@@ -57,12 +56,14 @@ function buildApiUrl(query) {
     orientation: 'horizontal',
     safesearch: true,
   });
-  return `${BASE_URL}${END_POINT}?${params}`;
+  return `${BASE_URL}?${params}`;
 }
 
 function fetchPhotos(query) {
   const url = buildApiUrl(query);
-  fetch(url)
+  fetch(url, {
+    referrerPolicy: 'unsafe-url',
+  })
     .then(response => {
       if (!response.ok) {
         throw new Error(response.status);
@@ -72,6 +73,14 @@ function fetchPhotos(query) {
     .then(data => handlePhotoData(data))
     .catch(error => {
       console.log('Error fetching photos:', error);
+      iziToast.error({
+        theme: 'dark',
+        position: 'topRight',
+        progressBarColor: 'rgb(181, 27, 27)',
+        backgroundColor: 'rgb(239, 64, 64)',
+        iconUrl: iconError,
+        message: error.message,
+      });
     })
     .finally(() => hideLoader());
 }
