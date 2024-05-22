@@ -3,10 +3,7 @@
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 
-import iconError from './img/error.svg';
-
-import SimpleLightbox from 'simplelightbox';
-import 'simplelightbox/dist/simple-lightbox.min.css';
+import { fetchPhotos } from './js/pixabay-api.js';
 
 // ==============================================================
 
@@ -14,7 +11,6 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 const formSearch = document.querySelector('.form');
 const gallery = document.querySelector('.gallery');
 const loader = document.querySelector('.loader');
-let lightbox;
 
 function showLoader() {
   loader.style.display = 'block';
@@ -23,8 +19,6 @@ function showLoader() {
 function hideLoader() {
   loader.style.display = 'none';
 }
-
-formSearch.addEventListener('submit', handleFormSubmit);
 
 function handleFormSubmit(event) {
   event.preventDefault();
@@ -47,113 +41,7 @@ function handleFormSubmit(event) {
   fetchPhotos(searchQuery);
 }
 
-function buildApiUrl(query) {
-  const BASE_URL = 'https://pixabay.com/api';
-  const params = new URLSearchParams({
-    key: '43998690-c32ec46c3205eb1d30dd41df5',
-    q: query,
-    image_type: 'photo',
-    orientation: 'horizontal',
-    safesearch: true,
-  });
-  return `${BASE_URL}?${params}`;
-}
+formSearch.addEventListener('submit', handleFormSubmit);
 
-function fetchPhotos(query) {
-  const url = buildApiUrl(query);
-  fetch(url, {
-    referrerPolicy: 'unsafe-url',
-  })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(response.status);
-      }
-      return response.json();
-    })
-    .then(data => handlePhotoData(data))
-    .catch(error => {
-      console.log('Error fetching photos:', error);
-      iziToast.error({
-        theme: 'dark',
-        position: 'topRight',
-        progressBarColor: 'rgb(181, 27, 27)',
-        backgroundColor: 'rgb(239, 64, 64)',
-        iconUrl: iconError,
-        message: error.message,
-      });
-    })
-    .finally(() => hideLoader());
-}
-
-function handlePhotoData(photoData) {
-  if (!photoData.hits.length) {
-    iziToast.error({
-      theme: 'dark',
-      position: 'topRight',
-      progressBarColor: 'rgb(181, 27, 27)',
-      backgroundColor: 'rgb(239, 64, 64)',
-      iconUrl: iconError,
-      message:
-        'Sorry, there are no images matching your search query. Please try again!',
-    });
-    hideLoader();
-
-    return;
-  }
-  const fragment = photoData.hits
-    .map(image => {
-      const {
-        webformatURL,
-        largeImageURL,
-        tags,
-        likes,
-        views,
-        comments,
-        downloads,
-      } = image;
-
-      return `<li class="gallery-item hidden">
-          <a class="gallery-link" href="${largeImageURL}">
-            <img
-              class="gallery-image"
-              src="${webformatURL}"
-              alt="${tags}"
-            />
-            <div class="img-descr-container">
-              <p class="img-descr-subtitle">Likes<span class="img-descr-qty">${likes}</span></p>
-              <p class="img-descr-subtitle">Views<span class="img-descr-qty">${views}</span></p>
-              <p class="img-descr-subtitle">Comments<span class="img-descr-qty">${comments}</span></p>
-              <p class="img-descr-subtitle">Downloads<span class="img-descr-qty">${downloads}</span></p>
-            </div>
-          </a>
-        </li>`;
-    })
-    .join('');
-
-  gallery.innerHTML = fragment;
-
-  const items = document.querySelectorAll('.gallery-item');
-  items.forEach((item, index) => {
-    setTimeout(() => {
-      item.classList.remove('hidden');
-      item.classList.add('fade-in');
-    }, index * 100); // Задержка между добавлением элементов (в миллисекундах)
-    return;
-  });
-
-  if (lightbox) {
-    lightbox.refresh();
-  } else {
-    lightbox = new SimpleLightbox('.gallery a', {
-      captions: true,
-      captionDelay: 250,
-      captionsData: 'alt',
-      scrollZoom: false,
-    });
-    lightbox.on('error.simplelightbox', function (e) {
-      console.log(e);
-    });
-  }
-  formSearch.reset();
-}
+export { hideLoader };
 // ==============================================================
